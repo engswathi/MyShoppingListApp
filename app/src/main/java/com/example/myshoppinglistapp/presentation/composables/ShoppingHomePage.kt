@@ -56,10 +56,29 @@ fun ShoppingHomePage(modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            items(sItems) {
+            items(sItems) { item ->
+                if (item.isEditing) {
+                    ShoppingItemEditor(item = item,
+                        onEditComplete = { editedName, editedQuantiy ->
+                            sItems = sItems.map {
+                                it.copy(isEditing = false)
+                            }
+                            val editedItem = sItems.find { it.id == item.id }
+                            editedItem?.let {
+                                it.name = editedName
+                                it.quantity = editedQuantiy
+                            }
+                        })
+                } else {
+                    ShoppingListItem(item,
+                        onEditClick = {
+                            sItems = sItems.map { it.copy(isEditing = it.id == item.id) }
 
+                        }, onDeleteClick = {
+                            sItems = sItems - item
+                        })
+                }
             }
-
         }
 
     }
@@ -77,7 +96,9 @@ fun ShoppingHomePage(modifier: Modifier = Modifier) {
                         value = itemName,
                         onValueChange = { itemName = it },
                         label = { Text("Item Name") },
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
                         singleLine = true
                     )
 
@@ -87,16 +108,20 @@ fun ShoppingHomePage(modifier: Modifier = Modifier) {
                         value = itemQuantity,
                         onValueChange = { itemQuantity = it },
                         label = { Text("Quantity") },
-                        modifier = Modifier.fillMaxWidth().padding(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
                     )
                 }
             },
             confirmButton = {
                 Button(onClick = {
-                    if (itemName.isNotBlank()){
-                    val item = ShoppingItem(id = sItems.size+1,
-                        name = itemName,
-                        quantity = itemQuantity.toInt())
+                    if (itemName.isNotBlank()) {
+                        val item = ShoppingItem(
+                            id = sItems.size + 1,
+                            name = itemName,
+                            quantity = itemQuantity.toInt()
+                        )
                         sItems = sItems + item
                         itemName = ""
                         itemQuantity = ""
